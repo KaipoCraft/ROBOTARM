@@ -1,0 +1,35 @@
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: black;
+}
+
+.input_video {
+    width: 300px;
+    position: absolute;
+    display: none;
+    z-index: 1;
+    -webkit-transform: scaleX(-1);
+  transform: scaleX(-1);
+}
+
+.output_canvas {
+    -webkit-transform: scaleX(-1);
+  transform: scaleX(-1);
+}
+
+.p5Canvas {
+    -webkit-transform: scaleX(-1);
+  transform: scaleX(-1);
+}
+
+.container {
+    position: absolute;
+}
+
+canvas {
+    position: absolute;
+}
