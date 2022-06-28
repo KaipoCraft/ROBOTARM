@@ -5,7 +5,7 @@
 // reference: https://itp.nyu.edu/physcomp/labs/labs-serial-communication/lab-serial-output-from-p5-js/
 
 import Mediapipe from "./MediapipeHands.js";
-import { scalePoints, calculateDistance, pythagorean, calculateAngle } from "./functions.js";
+import { scalePoints, calculateDistance } from "./functions.js";
 
 const videoElement = document.getElementsByClassName('input_video')[0];
 
@@ -16,12 +16,7 @@ let indexPoints = [];
 let thumbPoints = [];
 let wristPoint = [];
 
-// Degrees is the array that gets exported to Arduino, made up of the different servo joints
-let shoulderAngle = 0;
-let armAngle = 0;
-let wristAngle = 0;
-let clawAngle = 0;
-let degrees = [shoulderAngle, armAngle, wristAngle, clawAngle];
+let degrees;
 
 var serial;
 var portName = '0COM3';
@@ -69,53 +64,20 @@ window.draw = function() {
   // Actions to do if the hand is detected
   if (indexPoints[0] != null) {
 
-    // Draw the lines and angles that correspond to the servo angles
-    push();
-      stroke(255, 0, 0);
-      noFill();
-      strokeWeight(5);
-      
-      ellipse(indexPoints[0].x, indexPoints[0].y, 30);
-      ellipse(thumbPoints[0].x, thumbPoints[0].y, 30);
-      ellipse(wristPoint[0].x, wristPoint[0].y, 30);
-      
-      line(indexPoints[0].x, indexPoints[0].y, wristPoint[0].x, wristPoint[0].y);
-      line(wristPoint[0].x, wristPoint[0].y, thumbPoints[0].x, thumbPoints[0].y);
-
-      setLineDash([10, 10]);
-      line(indexPoints[0].x, indexPoints[0].y, thumbPoints[0].x, thumbPoints[0].y);
-      line(width/2, height/2, indexPoints[0].x, indexPoints[0].y);
-    pop();
-
     let distance = calculateDistance(indexPoints[0], thumbPoints[0]);
-    // MAXDISTANCE = the pythagorean theorum; index finger length and thumb length are two sides, calculate max hypotenuse when angle = 90
-    let v1 = calculateDistance(indexPoints[0], wristPoint[0]);
-    let v2 = calculateDistance(thumbPoints[0], wristPoint[0]);
-    let v3 = calculateDistance(indexPoints[0], thumbPoints[0]);
 
-    // let MAXDISTANCE = pythagorean(v1, v2);
-    // let angle = calculateAngle(v3, v2, v1);
+    let angle = int(map(indexPoints[0].y, 0, windowHeight, 0, 180));
 
-    //console.log(indexPoints[0].y);
-    //degrees = int(map(indexPoints[0].y, 0, windowHeight, 0, 180));
-    //let d = int(map(distance, 0, MAXDISTANCE, 0, 180));
-    // if (d <= 180) {
-    //   degrees = d;
-    // } else {
+    degrees = angle;
+
+    console.log(degrees);
+    // if (angle <= 180) {
+    //   degrees = angle;
+    // } else if (angle > 180){
     //   degrees = 180;
+    // } else {
+    //   degrees = 0;
     // }
-
-    let angle = int(map(distance, 0, 200, 0, 180));
-    console.log(shoulderAngle);
-    if (angle <= 180) {
-      shoulderAngle = angle;
-    } else if (angle > 180){
-      shoulderAngle = 180;
-    } else {
-      shoulderAngle = 0;
-    }
-
-    degrees = [0, 50, 180];
   }
 
   // create an array of hand points that all have corresponding places on that array (i.e. indexPoint = [0], thumbPoint = [1], etc.)
