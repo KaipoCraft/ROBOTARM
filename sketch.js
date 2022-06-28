@@ -3,6 +3,7 @@
 // University of Colorado Boulder
 
 // reference: https://itp.nyu.edu/physcomp/labs/labs-serial-communication/lab-serial-output-from-p5-js/
+// other reference: https://itp.nyu.edu/physcomp/labs/labs-serial-communication/two-way-duplex-serial-communication-using-p5js/
 
 import Mediapipe from "./MediapipeHands.js";
 import { scalePoints, calculateDistance } from "./functions.js";
@@ -19,13 +20,14 @@ let thumbPoints = [];
 let wristPoint = [];
 
 // angle that is exported to the arduino for the servo
-let degrees;
+let degrees = [];
+let encodedDegrees = [];
 
 // everything the serial controller needs
 var serial;
 var portName = '0COM3';
 var inData;
-var outByte = 0;
+var outByte = [0, 0, 0, 0];
 
 // --------------------------------------------------- //
 // ---------------------P5 Setup---------------------- //
@@ -63,7 +65,6 @@ window.draw = function() {
     wristPoint.push(scalePoints(mp.wrist[point]));
   }
 
-
   background(50);
   fill(255);
   // display the data coming back from the arduino to make sure it's the same as when it was sent
@@ -77,12 +78,16 @@ window.draw = function() {
 
     // scales the distance between 0 and 180 #TODO
     let angle = int(map(indexPoints[0].y, 0, windowHeight, 0, 180));
+    // let angle2 = int(map(indexPoints[0].x, 0, windowWidth, 0, 180));
+    // let angle = [50, 180];
+    
+    degrees = [80, angle, angle, 80, 80, 80, 80, 80];
 
     // #TODO want degrees to have multiple angles for multiple motors
-    degrees = angle;
+    //degrees = angle;
+    //degrees = [1, 10, 1, 20, 1, 30, 1, 40];
 
     // make sure the angle stays within bounds (0< x <180)
-    console.log(degrees);
     // if (angle <= 180) {
     //   degrees = angle;
     // } else if (angle > 180){
@@ -90,7 +95,11 @@ window.draw = function() {
     // } else {
     //   degrees = 0;
     // }
+
+    //console.log(encodedDegrees);
   }
+
+  
 
   // create an array of hand points that all have corresponding places on that array (i.e. indexPoint = [0], thumbPoint = [1], etc.)
   // reference that array in the arduino code
@@ -104,9 +113,13 @@ window.draw = function() {
   //    [1] = arm; angle of two points on the palm
   //    [2] = wrist;
   //    [3] = claw; distance between indextip and thumbtip
+  //console.log(degrees);
+
+  encodedDegrees = encodeOutByte(degrees);
+  console.log(encodedDegrees);
 
   // actually sends the data to the arduino
-  updateAngle();
+  updateAngle(encodedDegrees);
 
   // resets the hand points every time
   indexPoints = [];
@@ -156,8 +169,8 @@ window.serialError = function(err) {
   print('Something went wrong with the serial port. ' + err);
 }
 
-window.updateAngle = function() {
-  outByte = degrees;
+window.updateAngle = function(outByte) {
+  // serial.write(outByte);
   serial.write(outByte);
 }
 
@@ -176,4 +189,21 @@ window.printList = function(portList) {
 
 window.setLineDash = function(list) {
   drawingContext.setLineDash(list);
+}
+
+// For some reason Arduino isn't reading every other number so here I add "1"s in between so it'll read the data properly
+// window.addOnes = function(array) {
+//   for (let i = 0; i < array.length*2; i += 2) {
+//     array.splice(i, 0, 1);
+//     array.join;
+//   }
+// }
+
+// #TODO function that encodes array to string
+// valueOne + "," + valueTwo + "\n"
+window.encodeOutByte = function(arrayOut) {
+
+  let encodedArray = arrayOut.toString() + "X";
+
+  return encodedArray;
 }
