@@ -13,77 +13,71 @@
 
 // https://stackoverflow.com/questions/14265581/parse-split-a-string-in-c-using-string-delimiter-standard-c
 
+// Troubleshooting: for some reason the servos get confused every now and then?
+
 #include <Wire.h>
 #include <Servo.h>
 #include <Adafruit_PWMServoDriver.h>
 
 //Servo myservo;
 //int pos = 0;
-int ar[4] = { 0, 0, 0, 0 };
+int ar[6] = { 0, 0, 0, 0, 0, 0 };
 
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 
 #define SERVOMIN 70     // Min for the larger servo
 #define SERVOMAX 505    // Max for the larger servo
-#define SMSERVOMIN 150  // Min for the smaller servo
-#define SMSERVOMAX 600  // Max for the smaller servo
+#define SMSERVOMIN 100  // Min for the smaller servo
+#define SMSERVOMAX 470  // Max for the smaller servo
 #define SERVO_FREQ 50
 
 
 void setup() {
   Serial.begin(9600);           // initialize serial communications
-  Serial.setTimeout(50);       // sets the amount of time the servos refresh
-  
+  Serial.setTimeout(10);       // sets the amount of time the servos refresh
+
   pwm.begin();
   pwm.setOscillatorFrequency(27000000);
   pwm.setPWMFreq(SERVO_FREQ);
 
+  pwm.setPWM(2, 0, angleToPulse(150));
+  pwm.setPWM(3, 0, angleToPulse(150));
+  
   delay(10);
 } 
  
 void loop() {
   // Degrees
-  //    [0] = shoulderAngle
-  //    [1] = armAngle
-  //    [2] = wristAngle
-  //    [3] = clawAngle
+  //    [0] = clawAngle
+  //    [1] = wristAngle - 
+  //    [2] = armAngle1 - min(65) max(165)
+  //    [3] = armAngle2 - min(130) max(165)
+  //    [3] = baseAngle - 
   
   if (Serial.available() > 0) {                 // tells if there's a serialport available
-//    int inByte = Serial.read();                 // reads serial port
-//    int inByte = Serial.parseInt();
-    
-    for (int i = 0; i <= 4; i++) {
-      if (Serial.parseInt() > 0) {
+    for (int i = 0; i <= 5; i++) {
+      //if (Serial.parseInt() > 0) {
         ar[i] = Serial.parseInt();
         
-        Serial.print("Servo ");Serial.print(i+1);Serial.print(" = ");Serial.print(ar[i]);Serial.print("\n");
-        //Serial.write(ar[i]);                       // send it back out as raw binary     
-        //pwm.setPWM(i, 0, angleToPulse(ar[i]));
-      }
+        Serial.print("Servo ");Serial.print(i+1);Serial.print(" = ");Serial.print(ar[i]);Serial.print("\n");   
+        
+        if (i <= 1) {
+          pwm.setPWM(11+i, 0, angleToPulseSM(ar[i]));   // runs through the servos and sends each measurement to each
+        } else {
+          pwm.setPWM(11+i, 0, angleToPulse(ar[i]));
+        }
     }
-    
-    
-    
-//    Serial.print(inByte);
-//                       
-//    pwm.setPWM(0, 0, angleToPulse(inByte));     // use it to set the servo connected to 0
-  
-
-    // #TODO function that converts incoming string to array 
-    // input = string
-    // output = array
-    
   }
-  
-  pwm.setPWM(0, 0, angleToPulse(ar[0]));
-  pwm.setPWM(1, 0, angleToPulse(ar[1]));
 }
 
 
 // intakes a degree and returns the pulse width
 int angleToPulse(int degree) {
   int pulse = map(degree, 0, 180, SERVOMIN, SERVOMAX);
-//  Serial.print("Angle: "); Serial.print(degree);
-//  Serial.print(" pulse: "); Serial.println(pulse);
+  return pulse;
+}
+
+int angleToPulseSM(int degree) {
+  int pulse = map(degree, 0, 180, SMSERVOMIN, SMSERVOMAX);
   return pulse;
 }

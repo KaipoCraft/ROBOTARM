@@ -4,8 +4,13 @@ export function scalePoints(point) {
 }
 
 export function calculateDistance(v1, v2) {
-    let d = sqrt(sq(v2.x - v1.x) + sq(v2.y - v2.y));
+    let d = sqrt(sq(v2.x - v1.x) + sq(v2.y - v1.y));
     return d;
+}
+
+export function findMidpoint(v1, v2) {
+    let v3 = createVector((v1.x + v2.x)/2, (v1.y + v2.y)/2);
+    return v3;
 }
 
 export function pythagorean(a, b) {
